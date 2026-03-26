@@ -7,7 +7,7 @@ import RiskCountsBar from "../components/charts/RiskCountsBar";
 import Badge from "../components/ui/Badge";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Loading from "../components/ui/Loading";
-import { normalizeRisk, safeNumber } from "../utils/format";
+import { normalizeRisk, pickFirstExplanation, safeNumber } from "../utils/format";
 
 function countByRisk(claims) {
   const counts = { High: 0, Medium: 0, Low: 0, Unknown: 0 };
@@ -206,12 +206,9 @@ export default function DashboardPage() {
                       const id = c?.id || c?.claimId || c?.claim_id;
                       const claimant = c?.claimant || c?.claimantName || c?.name || "—";
                       const amount = c?.amount || c?.claimAmount || c?.claim_amount || "—";
-                      const reasons = c?.explanations || c?.reasonCodes || c?.reasons || c?.explanation;
-                      const summary = Array.isArray(reasons)
-                        ? reasons[0]
-                        : typeof reasons === "string"
-                          ? reasons
-                          : "—";
+                      const reasons =
+                        c?.explanations || c?.reasonCodes || c?.reasons || c?.explanation;
+                      const summary = pickFirstExplanation(reasons, "—");
 
                       return (
                         <tr key={String(id)}>

@@ -4,7 +4,7 @@ import { listClaims } from "../api/client";
 import Badge from "../components/ui/Badge";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Loading from "../components/ui/Loading";
-import { normalizeRisk } from "../utils/format";
+import { normalizeRisk, sanitizeExplanations } from "../utils/format";
 
 function extractBasics(claim) {
   const id = claim?.id || claim?.claimId || claim?.claim_id;
@@ -174,12 +174,13 @@ export default function QueuePage() {
                 ) : (
                   filtered.map((c) => {
                     const { id, risk, claimant, amount, date } = extractBasics(c);
-                    const explanations =
+                    const explanations = sanitizeExplanations(
                       c?.explanations ||
-                      c?.reasons ||
-                      c?.reasonCodes ||
-                      c?.explanation ||
-                      [];
+                        c?.reasons ||
+                        c?.reasonCodes ||
+                        c?.explanation ||
+                        []
+                    );
                     const explanationText = Array.isArray(explanations)
                       ? explanations.join("; ")
                       : String(explanations);
