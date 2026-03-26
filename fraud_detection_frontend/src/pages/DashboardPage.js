@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { listClaims } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
 import Badge from "../components/ui/Badge";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Loading from "../components/ui/Loading";
@@ -21,6 +22,9 @@ export default function DashboardPage() {
   /** Dashboard view: KPIs + high-risk preview. */
   const [claims, setClaims] = useState(null);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
 
   async function refresh() {
     try {
@@ -55,6 +59,22 @@ export default function DashboardPage() {
           <p>At-a-glance risk distribution of recently uploaded claims.</p>
         </div>
         <div className="btnRow">
+          {!isAuthenticated ? (
+            <button className="btn" onClick={() => navigate("/login")}>
+              Login
+            </button>
+          ) : (
+            <button
+              className="btn"
+              onClick={() => {
+                logout();
+                navigate("/login", { replace: true });
+              }}
+            >
+              Logout
+            </button>
+          )}
+
           <button className="btn" onClick={refresh}>
             Refresh
           </button>

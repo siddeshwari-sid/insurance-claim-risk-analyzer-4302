@@ -1,7 +1,5 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { getApiBaseUrl } from "../../api/client";
-import { useAuth } from "../../auth/AuthContext";
+import { NavLink } from "react-router-dom";
 
 function Icon({ type }) {
   const commonProps = { className: "navIcon", viewBox: "0 0 24 24" };
@@ -110,12 +108,6 @@ export default function AppLayout({ children }) {
    * Application shell with sidebar navigation.
    * Wraps page content and provides a consistent layout.
    */
-  const baseUrl = getApiBaseUrl();
-  const apiHint = baseUrl ? baseUrl : "same-origin";
-
-  const { session, logout } = useAuth();
-  const navigate = useNavigate();
-
   return (
     <div className="appShell">
       <aside className="sidebar" aria-label="Primary">
@@ -158,41 +150,6 @@ export default function AppLayout({ children }) {
             Claim Queue
           </NavLink>
         </nav>
-
-        <div className="sidebarFooter">
-          <div>
-            <strong>Signed in:</strong>{" "}
-            {session?.email
-              ? String(session.email)
-              : session?.username
-                ? String(session.username)
-                : "—"}
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            <div>
-              <strong>API:</strong> {apiHint}
-            </div>
-            <div style={{ marginTop: 6 }}>
-              <span>
-                Tip: set <code>REACT_APP_API_BASE_URL</code> for local dev.
-              </span>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 10 }}>
-            <button
-              className="btn"
-              onClick={() => {
-                logout();
-                navigate("/login", { replace: true });
-              }}
-              style={{ width: "100%" }}
-            >
-              Logout
-            </button>
-          </div>
-        </div>
       </aside>
 
       <main className="main">
