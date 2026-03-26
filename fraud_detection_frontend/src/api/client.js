@@ -7,15 +7,41 @@
  * - GET  /api/claims/:id
  */
 
+/**
+ * Minimal fetch wrapper for the Fraud Detection backend REST API.
+ *
+ * Endpoints (per work item):
+ * - POST /api/claims/upload
+ * - GET  /api/claims
+ * - GET  /api/claims/:id
+ */
+
 // PUBLIC_INTERFACE
 export function getApiBaseUrl() {
   /**
-   * Returns the backend base URL.
+   * Returns the backend base URL (no trailing slash).
    *
-   * Uses REACT_APP_API_BASE_URL if provided, otherwise defaults to same-origin.
-   * In local dev, you likely want: REACT_APP_API_BASE_URL=http://localhost:3001
+   * This app intentionally avoids same-origin/proxy reliance. Configure one of:
+   * - REACT_APP_API_BASE (preferred)
+   * - REACT_APP_BACKEND_URL (supported by this project's env list)
+   *
+   * Example:
+   *   REACT_APP_BACKEND_URL=https://your-backend.example.com
+   *
+   * Note: We keep a final fallback to same-origin ("") for maximum compatibility,
+   * but production deployments should set one of the env vars above.
    */
-  return (process.env.REACT_APP_API_BASE_URL || "").replace(/\/$/, "");
+  const raw =
+    process.env.REACT_APP_API_BASE ||
+    process.env.REACT_APP_BACKEND_URL ||
+    process.env.REACT_APP_API_BASE_URL ||
+    "";
+
+  return String(raw).trim().replace(/\/$/, "");
+}
+
+function looksLikeHtml(text) {
+  return /^\s*<!doctype html/i.test(text) || /<html[\s>]/i.test(text);
 }
 
 async function parseJsonOrText(response) {
@@ -41,10 +67,30 @@ export async function apiRequest(path, options = {}) {
 
   if (!res.ok) {
     const body = await parseJsonOrText(res).catch(() => "");
-    const message =
+    const base = getApiBaseUrl();
+
+    let message =
       typeof body === "string"
         ? body || `Request failed: ${res.status}`
         : body?.error || body?.message || `Request failed: ${res.status}`;
+
+    // If we accidentally hit a frontend/dev server route, Express/CRA often returns HTML.
+    // Never display raw HTML to the user; show a clean actionable error instead.
+    if (typeof body === "string" && looksLikeHtml(body)) {
+      message =
+        `Upload failed (HTTP ${res.status}). ` +
+        `The server returned HTML instead of JSON. ` +
+        `This usually means the request did not reach the backend API. ` +
+        `Check REACT_APP_BACKEND_URL / REACT_APP_API_BASE.`;
+    }
+
+    // Also handle plain "Cannot POST /api/..." without HTML wrapper.
+    if (typeof message === "string" && /cannot\s+post\s+/i.test(message)) {
+      message =
+        `Upload failed (HTTP ${res.status}): ${message.trim()}. ` +
+        `Check REACT_APP_BACKEND_URL / REACT_APP_API_BASE.`;
+    }
+
     const error = new Error(message);
     error.status = res.status;
     error.body = body;
