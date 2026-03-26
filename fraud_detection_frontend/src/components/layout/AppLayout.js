@@ -4,6 +4,7 @@ import { getApiBase } from "../../api/client";
 
 /**
  * Sidebar + content shell for the application.
+ * Matches the dark "glass" UI in the provided screenshots.
  */
 export default function AppLayout({ children }) {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -31,7 +32,7 @@ export default function AppLayout({ children }) {
           <div className="BrandMark" aria-hidden="true" />
           <div className="BrandText">
             <div className="BrandTitle">Risk Analyzer</div>
-            <div className="BrandSub">Insurance claim fraud signals</div>
+            <div className="BrandSub">Insurance claim scoring</div>
           </div>
         </div>
 
@@ -57,7 +58,7 @@ export default function AppLayout({ children }) {
             <span className="NavIcon" aria-hidden="true">
               U
             </span>
-            Upload CSV
+            Upload
           </NavLink>
 
           <NavLink
@@ -74,22 +75,29 @@ export default function AppLayout({ children }) {
         </nav>
 
         <div className="SidebarFooter">
-          <div>
-            Backend API: <code>{apiBase}</code>
+          <div className="Truncate" title={apiBase}>
+            API: <code>{apiBase}</code>
           </div>
-          <a
-            className="ApiLink"
-            href={`${String(apiBase).replace(/\/+$/, "")}/docs`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open API Docs
-          </a>
         </div>
       </aside>
 
       <div className="Content">
-        <div className="Container">{children}</div>
+        <div className="Container">
+          {/* provide a convenient docs link as a subtle "icon button" in the content area */}
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <a
+              className="Button ButtonIcon"
+              href={`${String(apiBase).replace(/\/+$/, "")}/docs`}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open API Docs"
+              title="Open API Docs"
+            >
+              ?
+            </a>
+          </div>
+          {children}
+        </div>
       </div>
     </div>
   );

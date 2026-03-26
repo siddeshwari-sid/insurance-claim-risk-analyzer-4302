@@ -1,22 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Link } from "react-router-dom";
 import { getClaims } from "../api/client";
-import { formatMoney, formatNumber, riskBadgeClass } from "../utils/format";
+import { formatMoney, formatNumber } from "../utils/format";
+import { Card } from "../components/ui/Card";
+import { StatusPill } from "../components/ui/StatusPill";
 
 /**
- * Dashboard showing KPIs, risk distribution, and a high-risk preview.
+ * Dashboard showing compact cards similar to screenshot:
+ * - Overview (totals)
+ * - Risk split summary
+ * - Recent high-risk claims preview
+ * - Rules/explanations preview
  */
 export default function DashboardPage() {
   const [claims, setClaims] = useState([]);
@@ -58,35 +52,30 @@ export default function DashboardPage() {
     return { total, high, medium, low, totalAmount };
   }, [claims]);
 
-  const riskPieData = useMemo(
-    () => [
-      { name: "High", value: metrics.high, color: "#ef4444" },
-      { name: "Medium", value: metrics.medium, color: "#f59e0b" },
-      { name: "Low", value: metrics.low, color: "#22c55e" },
-    ],
-    [metrics.high, metrics.medium, metrics.low]
-  );
-
-  const incidentBarData = useMemo(() => {
-    const counts = new Map();
-    for (const c of claims) {
-      const key = c?.incident_type ? String(c.incident_type) : "Unknown";
-      counts.set(key, (counts.get(key) || 0) + 1);
-    }
-    const arr = Array.from(counts.entries()).map(([incident, count]) => ({
-      incident,
-      count,
-    }));
-    arr.sort((a, b) => b.count - a.count);
-    return arr.slice(0, 10);
-  }, [claims]);
-
-  const highRiskPreview = useMemo(() => {
+  const topHigh = useMemo(() => {
     return claims
       .filter((c) => c?.riskLevel === "High")
       .slice()
       .sort((a, b) => (b?.riskScore || 0) - (a?.riskScore || 0))
-      .slice(0, 8);
+      .slice(0, 6);
+  }, [claims]);
+
+  const topReasons = useMemo(() => {
+    const bag = new Map();
+    for (const c of claims) {
+      const expl = Array.isArray(c?.explanations) ? c.explanations : [];
+      for (const r of expl.slice(0, 2)) {
+        const key = String(r || "").trim();
+        if (!key) continue;
+        bag.set(key, (bag.get(key) || 0) + 1);
+      }
+    }
+    const arr = Array.from(bag.entries()).map(([reason, count]) => ({
+      reason,
+      count,
+    }));
+    arr.sort((a, b) => b.count - a.count);
+    return arr.slice(0, 6);
   }, [claims]);
 
   return (
@@ -95,17 +84,16 @@ export default function DashboardPage() {
         <div>
           <h1 className="PageTitle">Dashboard</h1>
           <p className="Muted">
-            Risk distribution, totals, and top high-risk claims from the latest
-            upload(s).
+            Overview of recent uploads and risk signals.
           </p>
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Link className="Button ButtonPrimary" to="/upload">
-            Upload new CSV
-          </Link>
           <Link className="Button" to="/queue">
-            View queue
+            View Queue
+          </Link>
+          <Link className="Button ButtonPrimary" to="/upload">
+            Upload
           </Link>
         </div>
       </div>
@@ -115,141 +103,135 @@ export default function DashboardPage() {
           <div className="AlertTitle">Failed to load dashboard</div>
           <div>{loadError}</div>
           <div className="AlertHint">
-            Ensure the backend is running and accessible. The backend must expose{" "}
-            <code>GET /api/claims</code>.
+            Ensure the backend exposes <code>GET /api/claims</code>.
           </div>
         </div>
       ) : null}
 
-      <section className="KpiGrid" aria-label="Key risk metrics">
-        <div className="Kpi">
-          <div className="KpiLabel">Total Claims</div>
-          <div className="KpiValue">{loading ? "—" : formatNumber(metrics.total)}</div>
-        </div>
-
-        <div className="Kpi KpiHigh">
-          <div className="KpiLabel">High Risk</div>
-          <div className="KpiValue">{loading ? "—" : formatNumber(metrics.high)}</div>
-        </div>
-
-        <div className="Kpi KpiMed">
-          <div className="KpiLabel">Medium Risk</div>
-          <div className="KpiValue">{loading ? "—" : formatNumber(metrics.medium)}</div>
-        </div>
-
-        <div className="Kpi KpiLow">
-          <div className="KpiLabel">Low Risk</div>
-          <div className="KpiValue">{loading ? "—" : formatNumber(metrics.low)}</div>
-        </div>
-      </section>
-
-      <section className="Row" aria-label="Dashboard charts">
-        <div className="Card">
-          <div className="CardHeader">
-            <h2>Incident types (top 10)</h2>
-            <div className="Muted">{loading ? "Loading…" : `${claims.length} total`}</div>
-          </div>
-
-          <div className="ChartWrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={incidentBarData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="incident" interval={0} angle={-15} textAnchor="end" height={60} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="Card">
-          <div className="CardHeader">
-            <h2>Risk distribution</h2>
-            <div className="Muted">
-              Total amount: {loading ? "—" : formatMoney(metrics.totalAmount)}
+      <div className="Grid2" aria-label="Dashboard cards">
+        <Card
+          title="Overview"
+          right={<span className="Muted">{loading ? "Loading…" : "Latest"}</span>}
+        >
+          <div className="Grid2" style={{ gap: 10 }}>
+            <div>
+              <div className="StatLabel">Total Claims</div>
+              <div className="StatValue">{loading ? "—" : formatNumber(metrics.total)}</div>
+            </div>
+            <div>
+              <div className="StatLabel">Total Amount</div>
+              <div className="StatValue">{loading ? "—" : formatMoney(metrics.totalAmount)}</div>
             </div>
           </div>
 
-          <div className="ChartWrap">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Tooltip />
-                <Pie
-                  data={riskPieData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={60}
-                  outerRadius={95}
-                  paddingAngle={3}
-                >
-                  {riskPieData.map((entry) => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </section>
+          <div style={{ height: 1, background: "var(--divider)", margin: "12px 0" }} />
 
-      <section className="Card" aria-label="High-risk preview">
-        <div className="CardHeader">
-          <h2>High-risk claims</h2>
-          <div className="Muted">
-            Showing top {highRiskPreview.length} by risk score
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <span className="Pill PillHigh">
+              <span className="Dot" aria-hidden="true" />
+              High: {loading ? "—" : formatNumber(metrics.high)}
+            </span>
+            <span className="Pill PillMedium">
+              <span className="Dot" aria-hidden="true" />
+              Medium: {loading ? "—" : formatNumber(metrics.medium)}
+            </span>
+            <span className="Pill PillLow">
+              <span className="Dot" aria-hidden="true" />
+              Low: {loading ? "—" : formatNumber(metrics.low)}
+            </span>
           </div>
-        </div>
+        </Card>
 
-        <div className="TableWrap">
-          <table className="Table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Risk</th>
-                <th>Score</th>
-                <th>Amount</th>
-                <th>Incident</th>
-                <th>Top reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="TableEmpty">
-                    Loading…
-                  </td>
-                </tr>
-              ) : highRiskPreview.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="TableEmpty">
-                    No high-risk claims yet. Upload a CSV to generate scoring.
-                  </td>
-                </tr>
-              ) : (
-                highRiskPreview.map((c) => (
-                  <tr key={c.id}>
-                    <td>
-                      <Link to={`/claims/${encodeURIComponent(c.id)}`}>{c.id}</Link>
-                    </td>
-                    <td>
-                      <span className={riskBadgeClass(c.riskLevel)}>{c.riskLevel}</span>
-                    </td>
-                    <td>{Number.isFinite(c.riskScore) ? c.riskScore : "—"}</td>
-                    <td>{formatMoney(c.claim_amount)}</td>
-                    <td>{c.incident_type ?? "—"}</td>
-                    <td>
-                      {Array.isArray(c.explanations) && c.explanations.length
-                        ? c.explanations[0]
-                        : "—"}
-                    </td>
+        <Card title="Top Signals" right={<span className="Muted">Most frequent</span>}>
+          {loading ? (
+            <div className="TableEmpty">Loading…</div>
+          ) : topReasons.length === 0 ? (
+            <div className="TableEmpty">No explanations yet. Upload a CSV.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 10 }}>
+              {topReasons.map((r) => (
+                <div key={r.reason}>
+                  <div className="StatLabel Truncate" title={r.reason}>
+                    {r.reason}
+                  </div>
+                  <div className="Muted" style={{ marginTop: 4 }}>
+                    {formatNumber(r.count)} occurrence(s)
+                  </div>
+                  <div style={{ height: 1, background: "var(--divider)", marginTop: 10 }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <div style={{ gridColumn: "span 2" }}>
+          <Card
+            title="High-risk Claims"
+            right={
+              <span className="Muted">
+                {loading ? "Loading…" : `${topHigh.length} shown`}
+              </span>
+            }
+          >
+            <div className="TableWrap">
+              <table className="Table">
+                <thead>
+                  <tr>
+                    <th>Risk</th>
+                    <th>ID</th>
+                    <th>Score</th>
+                    <th>Amount</th>
+                    <th>Incident</th>
+                    <th className="Truncate">Top reason</th>
+                    <th />
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="TableEmpty">
+                        Loading…
+                      </td>
+                    </tr>
+                  ) : topHigh.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="TableEmpty">
+                        No high-risk claims yet. Upload a CSV to generate scoring.
+                      </td>
+                    </tr>
+                  ) : (
+                    topHigh.map((c) => (
+                      <tr key={c.id}>
+                        <td>
+                          <StatusPill level={c.riskLevel} />
+                        </td>
+                        <td className="Truncate" title={c.id}>
+                          {c.id}
+                        </td>
+                        <td>{Number.isFinite(c.riskScore) ? c.riskScore : "—"}</td>
+                        <td>{formatMoney(c.claim_amount)}</td>
+                        <td className="Truncate" title={c.incident_type ?? ""}>
+                          {c.incident_type ?? "—"}
+                        </td>
+                        <td className="Truncate" title={(c.explanations && c.explanations[0]) || ""}>
+                          {Array.isArray(c.explanations) && c.explanations.length
+                            ? c.explanations[0]
+                            : "—"}
+                        </td>
+                        <td style={{ width: 1, whiteSpace: "nowrap" }}>
+                          <Link className="Button" to={`/claims/${encodeURIComponent(c.id)}`}>
+                            Open
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </div>
-      </section>
+      </div>
     </>
   );
 }

@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getClaimById } from "../api/client";
-import { formatMoney, formatNumber, riskBadgeClass } from "../utils/format";
+import { formatMoney, formatNumber } from "../utils/format";
+import { Card } from "../components/ui/Card";
+import { StatusPill } from "../components/ui/StatusPill";
 
 /**
- * Claim detail page: shows all fields and explanations for a claim.
+ * Claim detail page styled to match the same dark card system.
  */
 export default function ClaimDetailPage() {
   const { id } = useParams();
@@ -50,10 +52,10 @@ export default function ClaimDetailPage() {
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Link className="Button" to="/queue">
-            Back to queue
+            Queue
           </Link>
-          <Link className="Button" to="/dashboard">
-            Dashboard
+          <Link className="Button ButtonPrimary" to="/upload">
+            Upload
           </Link>
         </div>
       </div>
@@ -65,88 +67,118 @@ export default function ClaimDetailPage() {
         </div>
       ) : null}
 
-      <section className="Card" aria-label="Claim summary">
-        <div className="CardHeader">
-          <h2>Summary</h2>
-          <div className="Muted">{loading ? "Loading…" : "Scored by backend rules"}</div>
-        </div>
-
-        {loading ? (
-          <div className="TableEmpty">Loading…</div>
-        ) : !claim ? (
-          <div className="TableEmpty">Claim not found.</div>
-        ) : (
-          <>
-            <div className="MetaGrid">
-              <div className="MetaItem">
-                <div className="MetaLabel">Risk level</div>
-                <div className="MetaValue">
-                  <span className={riskBadgeClass(claim.riskLevel)}>{claim.riskLevel}</span>
+      <div className="Grid2" aria-label="Claim detail content">
+        <Card
+          title="Summary"
+          right={<span className="Muted">{loading ? "Loading…" : "Scored"}</span>}
+        >
+          {loading ? (
+            <div className="TableEmpty">Loading…</div>
+          ) : !claim ? (
+            <div className="TableEmpty">Claim not found.</div>
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              <div className="Grid2">
+                <div>
+                  <div className="StatLabel">Risk</div>
+                  <div style={{ marginTop: 8 }}>
+                    <StatusPill level={claim.riskLevel} />
+                  </div>
+                </div>
+                <div>
+                  <div className="StatLabel">Risk Score</div>
+                  <div className="StatValue">
+                    {Number.isFinite(claim.riskScore) ? claim.riskScore : "—"}
+                  </div>
                 </div>
               </div>
-              <div className="MetaItem">
-                <div className="MetaLabel">Risk score</div>
-                <div className="MetaValue">
-                  {Number.isFinite(claim.riskScore) ? claim.riskScore : "—"}
+
+              <div style={{ height: 1, background: "var(--divider)" }} />
+
+              <div className="Grid2">
+                <div>
+                  <div className="StatLabel">Claim Amount</div>
+                  <div className="StatValue">{formatMoney(claim.claim_amount)}</div>
+                </div>
+                <div>
+                  <div className="StatLabel">Incident Type</div>
+                  <div className="StatValue" style={{ fontSize: 14 }}>
+                    {claim.incident_type ?? "—"}
+                  </div>
                 </div>
               </div>
-              <div className="MetaItem">
-                <div className="MetaLabel">Claim amount</div>
-                <div className="MetaValue">{formatMoney(claim.claim_amount)}</div>
+
+              <div className="Grid2">
+                <div>
+                  <div className="StatLabel">Days Since Incident</div>
+                  <div className="StatValue" style={{ fontSize: 14 }}>
+                    {formatNumber(claim.days_since_incident)}
+                  </div>
+                </div>
+                <div>
+                  <div className="StatLabel">Prior Claims</div>
+                  <div className="StatValue" style={{ fontSize: 14 }}>
+                    {formatNumber(claim.prior_claims_count)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="Grid2">
+                <div style={{ gridColumn: "span 2" }}>
+                  <div className="StatLabel">Description</div>
+                  <div style={{ marginTop: 8, color: "var(--text-secondary)" }}>
+                    {claim.description ?? "—"}
+                  </div>
+                </div>
               </div>
             </div>
+          )}
+        </Card>
 
-            <div className="MetaGrid" style={{ marginTop: 10 }}>
-              <div className="MetaItem">
-                <div className="MetaLabel">Incident</div>
-                <div className="MetaValue">{claim.incident_type ?? "—"}</div>
-              </div>
-              <div className="MetaItem">
-                <div className="MetaLabel">Days since incident</div>
-                <div className="MetaValue">{formatNumber(claim.days_since_incident)}</div>
-              </div>
-              <div className="MetaItem">
-                <div className="MetaLabel">Prior claims</div>
-                <div className="MetaValue">{formatNumber(claim.prior_claims_count)}</div>
-              </div>
-            </div>
+        <div style={{ display: "grid", gap: 12 }}>
+          <Card
+            title="Signals"
+            right={
+              <span className="Muted">
+                {loading ? "—" : explanations.length ? `${explanations.length}` : "0"}
+              </span>
+            }
+          >
+            {loading ? (
+              <div className="TableEmpty">Loading…</div>
+            ) : !claim ? (
+              <div className="TableEmpty">—</div>
+            ) : explanations.length === 0 ? (
+              <div className="TableEmpty">No explanations returned for this claim.</div>
+            ) : (
+              <ol style={{ margin: 0, paddingLeft: 16, color: "var(--text-secondary)" }}>
+                {explanations.map((r, idx) => (
+                  <li key={idx} style={{ marginBottom: 8 }}>
+                    {r}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </Card>
 
-            <div className="MetaGrid" style={{ marginTop: 10 }}>
-              <div className="MetaItem">
-                <div className="MetaLabel">Policy tenure (months)</div>
-                <div className="MetaValue">{formatNumber(claim.policy_tenure_months)}</div>
+          <Card title="Policy & History" right={<span className="Muted">Metadata</span>}>
+            {loading ? (
+              <div className="TableEmpty">Loading…</div>
+            ) : !claim ? (
+              <div className="TableEmpty">—</div>
+            ) : (
+              <div style={{ display: "grid", gap: 10 }}>
+                <div>
+                  <div className="StatLabel">Policy Tenure (months)</div>
+                  <div className="StatValue" style={{ fontSize: 14 }}>
+                    {formatNumber(claim.policy_tenure_months)}
+                  </div>
+                </div>
               </div>
-              <div className="MetaItem" style={{ gridColumn: "span 2" }}>
-                <div className="MetaLabel">Description</div>
-                <div className="MetaValue">{claim.description ?? "—"}</div>
-              </div>
-            </div>
-          </>
-        )}
-      </section>
-
-      <section className="Card" aria-label="Explanations">
-        <div className="CardHeader">
-          <h2>Explanations</h2>
-          <div className="Muted">
-            {loading ? "—" : explanations.length ? `${explanations.length} signal(s)` : "No signals"}
-          </div>
+            )}
+          </Card>
         </div>
-
-        {loading ? (
-          <div className="TableEmpty">Loading…</div>
-        ) : !claim ? (
-          <div className="TableEmpty">—</div>
-        ) : explanations.length === 0 ? (
-          <div className="TableEmpty">No explanations returned for this claim.</div>
-        ) : (
-          <ol className="ReasonList">
-            {explanations.map((r, idx) => (
-              <li key={idx}>{r}</li>
-            ))}
-          </ol>
-        )}
-      </section>
+      </div>
     </>
   );
 }

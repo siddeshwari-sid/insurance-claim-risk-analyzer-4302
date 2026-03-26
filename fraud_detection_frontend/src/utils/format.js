@@ -18,9 +18,12 @@ export function formatNumber(value) {
 
 // PUBLIC_INTERFACE
 export function riskBadgeClass(riskLevel) {
-  /** Map risk level to CSS badge class. */
-  if (riskLevel === "High") return "Badge BadgeHigh";
-  if (riskLevel === "Medium") return "Badge BadgeMedium";
-  if (riskLevel === "Low") return "Badge BadgeLow";
-  return "Badge";
+  /**
+   * Backwards-compatible mapping used by existing pages.
+   * In the updated UI, we prefer <StatusPill/> but keeping this avoids breakage.
+   */
+  if (riskLevel === "High") return "Pill PillHigh";
+  if (riskLevel === "Medium") return "Pill PillMedium";
+  if (riskLevel === "Low") return "Pill PillLow";
+  return "Pill";
 }

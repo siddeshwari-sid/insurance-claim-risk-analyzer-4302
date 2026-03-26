@@ -1,12 +1,20 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { uploadClaimsCsv } from "../api/client";
-import { formatMoney, riskBadgeClass } from "../utils/format";
+import { formatMoney } from "../utils/format";
+import { Card } from "../components/ui/Card";
+import { SegmentedControl } from "../components/ui/SegmentedControl";
+import { StatusPill } from "../components/ui/StatusPill";
 
 /**
- * Upload CSV page: allows users to paste CSV content and submit for scoring.
+ * Upload page styled to match screenshot:
+ * - large panel card
+ * - segmented tabs
+ * - right-side primary action
  */
 export default function UploadPage() {
+  const [tab, setTab] = useState("paste");
+
   const [csvText, setCsvText] = useState(
     "id,claim_amount,incident_type,days_since_incident,policy_tenure_months,prior_claims_count,description\n" +
       "C-1001,12000,Collision,2,14,0,Rear-end collision in parking lot\n" +
@@ -19,8 +27,7 @@ export default function UploadPage() {
   const warnings = useMemo(() => result?.warnings || [], [result]);
   const accepted = useMemo(() => result?.claims || [], [result]);
 
-  async function onSubmit(e) {
-    e.preventDefault();
+  async function onSubmit() {
     setSubmitting(true);
     setError("");
     setResult(null);
@@ -35,22 +42,31 @@ export default function UploadPage() {
     }
   }
 
+  const tabs = useMemo(
+    () => [
+      { value: "paste", label: "Paste CSV" },
+      { value: "file", label: "Upload File" },
+      { value: "help", label: "Format Help" },
+    ],
+    []
+  );
+
   return (
     <>
       <div className="PageHeader">
         <div>
-          <h1 className="PageTitle">Upload CSV</h1>
+          <h1 className="PageTitle">Upload</h1>
           <p className="Muted">
-            Paste claim rows (CSV) and the backend will assign a risk score/level with explanations.
+            Submit claim data and receive a risk level, score, and explanations.
           </p>
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Link className="Button" to="/dashboard">
-            Back to dashboard
+            Back
           </Link>
-          <Link className="Button ButtonPrimary" to="/queue">
-            View queue
+          <Link className="Button" to="/queue">
+            Queue
           </Link>
         </div>
       </div>
@@ -60,66 +76,111 @@ export default function UploadPage() {
           <div className="AlertTitle">Upload failed</div>
           <div>{error}</div>
           <div className="AlertHint">
-            The backend expects <code>POST /api/claims/upload</code> with <code>text/csv</code>.
+            Backend expects <code>POST /api/claims/upload</code> with <code>text/csv</code>.
           </div>
         </div>
       ) : null}
 
-      <section className="Card">
-        <div className="CardHeader">
-          <h2>CSV input</h2>
-          <div className="Muted">Tip: include headers exactly as shown.</div>
-        </div>
-
-        <form className="FormRow" onSubmit={onSubmit}>
-          <textarea
-            className="Textarea"
-            value={csvText}
-            onChange={(e) => setCsvText(e.target.value)}
-            spellCheck={false}
-            aria-label="CSV input"
-          />
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      <Card
+        title="Upload Claims"
+        right={
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <SegmentedControl
+              items={tabs}
+              value={tab}
+              onChange={setTab}
+              ariaLabel="Upload mode"
+            />
             <button
               className="Button ButtonPrimary"
-              type="submit"
-              disabled={submitting || !String(csvText || "").trim()}
-            >
-              {submitting ? "Uploading…" : "Upload and score"}
-            </button>
-            <button
-              className="Button"
               type="button"
-              disabled={submitting}
-              onClick={() => {
-                setResult(null);
-                setError("");
-              }}
+              onClick={onSubmit}
+              disabled={submitting || tab !== "paste" || !String(csvText || "").trim()}
             >
-              Clear results
+              {submitting ? "Scoring…" : "Run Scoring"}
             </button>
           </div>
-        </form>
-      </section>
-
-      {result ? (
-        <>
-          <section className="Card" aria-label="Upload summary">
-            <div className="CardHeader">
-              <h2>Upload summary</h2>
-              <div className="Muted">
-                Accepted: <strong>{accepted.length}</strong> • Warnings:{" "}
-                <strong>{warnings.length}</strong>
+        }
+      >
+        {tab === "paste" ? (
+          <div style={{ display: "grid", gap: 12 }}>
+            <div className="Muted">
+              Paste CSV with headers. Results will appear below in the same panel style.
+            </div>
+            <textarea
+              className="Textarea"
+              value={csvText}
+              onChange={(e) => setCsvText(e.target.value)}
+              spellCheck={false}
+              aria-label="CSV input"
+            />
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <button
+                className="Button"
+                type="button"
+                disabled={submitting}
+                onClick={() => {
+                  setResult(null);
+                  setError("");
+                }}
+              >
+                Clear Results
+              </button>
+            </div>
+          </div>
+        ) : tab === "file" ? (
+          <div style={{ display: "grid", gap: 10 }}>
+            <div className="Muted">
+              File upload UI is not implemented in this template. Use “Paste CSV” for now.
+            </div>
+            <div
+              style={{
+                border: "1px dashed rgba(255,255,255,0.18)",
+                borderRadius: 12,
+                padding: 16,
+                background: "rgba(0,0,0,0.18)",
+              }}
+            >
+              <div className="Muted">Drop a CSV here (coming soon)</div>
+              <div style={{ marginTop: 10 }}>
+                <button className="Button" type="button" disabled>
+                  Choose File
+                </button>
               </div>
             </div>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 10 }}>
+            <div className="Muted">Expected headers:</div>
+            <code>
+              id,claim_amount,incident_type,days_since_incident,policy_tenure_months,prior_claims_count,description
+            </code>
+            <div className="Muted">
+              Example row:
+              <div style={{ marginTop: 6 }}>
+                <code>C-1001,12000,Collision,2,14,0,Rear-end collision in parking lot</code>
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
 
+      {result ? (
+        <div className="Grid2">
+          <Card
+            title="Upload Summary"
+            right={
+              <span className="Muted">
+                Accepted: <strong>{accepted.length}</strong> • Warnings:{" "}
+                <strong>{warnings.length}</strong>
+              </span>
+            }
+          >
             {warnings.length ? (
               <div className="Alert" role="status">
                 <div className="AlertTitle">Warnings</div>
-                <div className="AlertHint">
-                  Some rows were skipped or had parsing issues.
-                </div>
-                <ul className="ReasonList">
+                <div className="AlertHint">Some rows were skipped or had parsing issues.</div>
+                <ul style={{ margin: "10px 0 0", paddingLeft: 16, color: "var(--text-secondary)" }}>
                   {warnings.slice(0, 8).map((w, idx) => (
                     <li key={`${w?.row ?? idx}-${idx}`}>
                       Row {w?.row ?? "—"}:{" "}
@@ -128,61 +189,77 @@ export default function UploadPage() {
                   ))}
                 </ul>
               </div>
-            ) : null}
-          </section>
+            ) : (
+              <div className="Muted">No warnings.</div>
+            )}
+          </Card>
 
-          <section className="Card" aria-label="Accepted claims">
-            <div className="CardHeader">
-              <h2>Accepted claims</h2>
+          <Card title="Next Steps" right={<span className="Muted">Review</span>}>
+            <div style={{ display: "grid", gap: 10 }}>
               <div className="Muted">
-                Open a claim to see full details and explanations.
+                Open the claim queue to review all newly scored claims.
               </div>
+              <Link className="Button ButtonPrimary" to="/queue">
+                Go to Queue
+              </Link>
             </div>
+          </Card>
 
-            <div className="TableWrap">
-              <table className="Table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Risk</th>
-                    <th>Score</th>
-                    <th>Amount</th>
-                    <th>Incident</th>
-                    <th>Top reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {accepted.length === 0 ? (
+          <div style={{ gridColumn: "span 2" }}>
+            <Card title="Accepted Claims" right={<span className="Muted">Click Open</span>}>
+              <div className="TableWrap">
+                <table className="Table">
+                  <thead>
                     <tr>
-                      <td className="TableEmpty" colSpan={6}>
-                        No accepted rows.
-                      </td>
+                      <th>Risk</th>
+                      <th>ID</th>
+                      <th>Score</th>
+                      <th>Amount</th>
+                      <th>Incident</th>
+                      <th className="Truncate">Top reason</th>
+                      <th />
                     </tr>
-                  ) : (
-                    accepted.map((c) => (
-                      <tr key={c.id}>
-                        <td>
-                          <Link to={`/claims/${encodeURIComponent(c.id)}`}>{c.id}</Link>
-                        </td>
-                        <td>
-                          <span className={riskBadgeClass(c.riskLevel)}>{c.riskLevel}</span>
-                        </td>
-                        <td>{Number.isFinite(c.riskScore) ? c.riskScore : "—"}</td>
-                        <td>{formatMoney(c.claim_amount)}</td>
-                        <td>{c.incident_type ?? "—"}</td>
-                        <td>
-                          {Array.isArray(c.explanations) && c.explanations.length
-                            ? c.explanations[0]
-                            : "—"}
+                  </thead>
+                  <tbody>
+                    {accepted.length === 0 ? (
+                      <tr>
+                        <td className="TableEmpty" colSpan={7}>
+                          No accepted rows.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </>
+                    ) : (
+                      accepted.map((c) => (
+                        <tr key={c.id}>
+                          <td>
+                            <StatusPill level={c.riskLevel} />
+                          </td>
+                          <td className="Truncate" title={c.id}>
+                            {c.id}
+                          </td>
+                          <td>{Number.isFinite(c.riskScore) ? c.riskScore : "—"}</td>
+                          <td>{formatMoney(c.claim_amount)}</td>
+                          <td className="Truncate" title={c.incident_type ?? ""}>
+                            {c.incident_type ?? "—"}
+                          </td>
+                          <td className="Truncate" title={(c.explanations && c.explanations[0]) || ""}>
+                            {Array.isArray(c.explanations) && c.explanations.length
+                              ? c.explanations[0]
+                              : "—"}
+                          </td>
+                          <td style={{ width: 1, whiteSpace: "nowrap" }}>
+                            <Link className="Button" to={`/claims/${encodeURIComponent(c.id)}`}>
+                              Open
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+        </div>
       ) : null}
     </>
   );
