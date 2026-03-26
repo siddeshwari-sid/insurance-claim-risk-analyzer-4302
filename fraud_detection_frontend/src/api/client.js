@@ -66,18 +66,55 @@ export async function getClaim(id) {
   return apiRequest(`/api/claims/${encodeURIComponent(id)}`, { method: "GET" });
 }
 
+function supportsMultipartUpload() {
+  // CRA convention: any non-empty string enables the feature.
+  // This keeps compatibility if the backend later switches to multipart/form-data.
+  return String(process.env.REACT_APP_API_UPLOAD_MULTIPART || "").trim() === "true";
+}
+
+async function fileToText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Failed to read file."));
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.readAsText(file);
+  });
+}
+
 // PUBLIC_INTERFACE
 export async function uploadClaimsCsv(file) {
   /**
    * Upload a CSV file with claim information.
-   * Backend is expected to accept multipart/form-data.
+   *
+   * Backend (current) supports:
+   *  - Content-Type: text/csv with raw CSV as request body
+   *  - Content-Type: application/json with {"csv": "..."}
+   *
+   * If REACT_APP_API_UPLOAD_MULTIPART=true, will send multipart/form-data with field "file"
+   * for compatibility with alternative backends.
    */
-  const formData = new FormData();
-  // Common field name is "file"; backend should be implemented accordingly.
-  formData.append("file", file);
+  if (!file) {
+    throw new Error("No file selected.");
+  }
+
+  if (supportsMultipartUpload()) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return apiRequest("/api/claims/upload", {
+      method: "POST",
+      body: formData,
+    });
+  }
+
+  // Prefer raw CSV body to match backend OpenAPI spec exactly.
+  const csvText = await fileToText(file);
 
   return apiRequest("/api/claims/upload", {
     method: "POST",
-    body: formData,
+    headers: {
+      "Content-Type": "text/csv",
+    },
+    body: csvText,
   });
 }
