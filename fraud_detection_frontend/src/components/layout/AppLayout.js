@@ -117,9 +117,11 @@ export default function AppLayout({ children }) {
       <aside className="sidebar" aria-label="Primary">
         <div className="brand">
           <BrandLogoMark />
-          <div className="brandTitle">
-            <strong>Claim Risk Analyzer</strong>
-            <span>Fraud Detection</span>
+          <div className="brandLockup">
+            <div className="brandNameRow">
+              <span className="brandName">Claim Risk Analyzer</span>
+            </div>
+            <div className="brandTagline">Fraud Detection</div>
           </div>
         </div>
 
