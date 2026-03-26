@@ -573,3 +573,149 @@ code {
   color: var(--muted);
   margin-top: 8px;
 }
+
+/* Charts (glass/3D) */
+.chartWrap {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(520px 220px at 20% 10%, rgba(255, 255, 255, 0.07), transparent 62%),
+    linear-gradient(180deg, rgba(31, 41, 55, 0.52), rgba(17, 24, 39, 0.40));
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.chartWrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 45%);
+  opacity: 0.75;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), transparent 70%);
+}
+
+.chartEmpty {
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.24);
+  background:
+    radial-gradient(520px 220px at 20% 10%, rgba(255, 255, 255, 0.06), transparent 62%),
+    linear-gradient(180deg, rgba(31, 41, 55, 0.40), rgba(17, 24, 39, 0.32));
+  padding: 16px;
+  text-align: center;
+  color: rgba(229, 231, 235, 0.86);
+  box-shadow: var(--shadow-sm);
+}
+
+.chartLegend {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.chartLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(180px 80px at 30% 20%, rgba(255, 255, 255, 0.10), transparent 62%),
+    linear-gradient(180deg, rgba(31, 41, 55, 0.48), rgba(17, 24, 39, 0.40));
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.42), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  color: rgba(229, 231, 235, 0.92);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chartLegendSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.42);
+}
+
+.chartLegendLabel {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.chartLegendValue {
+  font-weight: 700;
+  color: rgba(229, 231, 235, 0.72);
+}
+
+/* Dashboard risk pills under chart */
+.riskPills {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 980px) {
+  .riskPills {
+    grid-template-columns: 1fr;
+  }
+}
+
+.riskPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(240px 120px at 30% 20%, rgba(255, 255, 255, 0.09), transparent 60%),
+    linear-gradient(180deg, rgba(31, 41, 55, 0.54), rgba(17, 24, 39, 0.44));
+  box-shadow: var(--shadow-sm);
+}
+
+.riskPillDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 10px;
+  flex: 0 0 auto;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.42);
+}
+
+.riskPillValue {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.riskPillHigh {
+  border-color: rgba(239, 68, 68, 0.26);
+}
+.riskPillHigh .riskPillDot {
+  background: rgba(239, 68, 68, 0.85);
+  border: 2px solid rgba(239, 68, 68, 0.45);
+}
+
+.riskPillMedium {
+  border-color: rgba(245, 158, 11, 0.28);
+}
+.riskPillMedium .riskPillDot {
+  background: rgba(245, 158, 11, 0.85);
+  border: 2px solid rgba(245, 158, 11, 0.48);
+}
+
+.riskPillLow {
+  border-color: rgba(6, 182, 212, 0.26);
+}
+.riskPillLow .riskPillDot {
+  background: rgba(6, 182, 212, 0.85);
+  border: 2px solid rgba(6, 182, 212, 0.48);
+}

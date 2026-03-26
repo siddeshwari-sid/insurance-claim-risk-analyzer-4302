@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { listClaims } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import RiskDistributionPie from "../components/charts/RiskDistributionPie";
 import Badge from "../components/ui/Badge";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Loading from "../components/ui/Loading";
@@ -107,6 +108,71 @@ export default function DashboardPage() {
                 {safeNumber(stats.Medium + stats.Low)}
               </p>
               <div className="kpiSub">Monitor / standard handling</div>
+            </div>
+          </div>
+
+          <div className="grid gridCols2" style={{ marginBottom: 14 }}>
+            <div className="card">
+              <div
+                className="cardPad"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <strong>Risk distribution</strong>
+                  <div className="smallHelp">
+                    Claims grouped by risk level (High/Medium/Low) using current API
+                    data.
+                  </div>
+                </div>
+              </div>
+
+              <div className="cardPad" style={{ paddingTop: 0 }}>
+                <RiskDistributionPie counts={stats} height={280} />
+
+                <div className="riskPills" aria-label="Risk distribution counts">
+                  <div className="riskPill riskPillHigh">
+                    <span className="riskPillDot" aria-hidden="true" />
+                    <span style={{ fontWeight: 800 }}>High</span>
+                    <span className="riskPillValue">{safeNumber(stats.High)}</span>
+                  </div>
+                  <div className="riskPill riskPillMedium">
+                    <span className="riskPillDot" aria-hidden="true" />
+                    <span style={{ fontWeight: 800 }}>Medium</span>
+                    <span className="riskPillValue">{safeNumber(stats.Medium)}</span>
+                  </div>
+                  <div className="riskPill riskPillLow">
+                    <span className="riskPillDot" aria-hidden="true" />
+                    <span style={{ fontWeight: 800 }}>Low</span>
+                    <span className="riskPillValue">{safeNumber(stats.Low)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="cardPad">
+                <strong>Notes</strong>
+                <div className="smallHelp">
+                  This dashboard reflects the backend’s in-memory store for the current
+                  session. Upload a CSV to refresh the distribution.
+                </div>
+
+                <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                  <div className="alert">
+                    <strong>Tip:</strong> click <em>Open queue</em> to filter and search
+                    across all claims.
+                  </div>
+                  <div className="alert">
+                    <strong>Why a pie chart?</strong> quick scan for risk skew and
+                    operational load (review capacity).
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
