@@ -31,6 +31,18 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
+  function onChangeUsername(next) {
+    setUsername(next);
+    // Clear stale error as user edits
+    if (error) setError(null);
+  }
+
+  function onChangePassword(next) {
+    setPassword(next);
+    // Clear stale error as user edits
+    if (error) setError(null);
+  }
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -72,8 +84,8 @@ export default function LoginPage() {
                 className="input"
                 autoComplete="username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. analyst1"
+                onChange={(e) => onChangeUsername(e.target.value)}
+                placeholder="admin"
                 disabled={busy}
               />
             </div>
@@ -88,8 +100,8 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                onChange={(e) => onChangePassword(e.target.value)}
+                placeholder="admin"
                 disabled={busy}
               />
             </div>
@@ -101,7 +113,7 @@ export default function LoginPage() {
             </div>
 
             <div className="smallHelp">
-              Demo note: authentication is client-side only and stored in your browser localStorage.
+              Demo credentials: <code>admin</code> / <code>admin</code>. Authentication is client-side only and stored in your browser localStorage.
             </div>
           </form>
         </div>

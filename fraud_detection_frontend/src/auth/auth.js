@@ -30,11 +30,18 @@ export function isAuthenticated() {
   return Boolean(getStoredAuth());
 }
 
+const DEFAULT_USERNAME = "admin";
+const DEFAULT_PASSWORD = "admin";
+
 // PUBLIC_INTERFACE
 export function loginWithCredentials(username, password) {
   /**
    * "Authenticates" the user client-side.
    * In a real app this would call a backend auth endpoint.
+   *
+   * This demo app requires default credentials:
+   *   username: admin
+   *   password: admin
    *
    * @param {string} username
    * @param {string} password
@@ -48,6 +55,12 @@ export function loginWithCredentials(username, password) {
   }
   if (!p) {
     throw new Error("Password is required.");
+  }
+
+  // Enforce default credentials for this demo.
+  // Keep the error explicit and user-friendly.
+  if (u !== DEFAULT_USERNAME || p !== DEFAULT_PASSWORD) {
+    throw new Error("Incorrect username or password. Try admin / admin.");
   }
 
   const session = { username: u, loginAt: new Date().toISOString() };
