@@ -19,12 +19,31 @@ export function riskClassName(risk) {
   return "badge";
 }
 
+/**
+ * Keep a single shared formatter instance to avoid re-allocating it on each render.
+ * Uses USD because the UI examples use "$".
+ */
+const USD_FORMATTER = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
 // PUBLIC_INTERFACE
 export function safeNumber(n) {
   /** Render numbers safely for KPI values. */
   if (n === null || n === undefined) return "—";
   if (Number.isNaN(Number(n))) return "—";
   return String(n);
+}
+
+// PUBLIC_INTERFACE
+export function formatCurrency(value) {
+  /** Format a numeric amount as currency (e.g. "$15,500"). */
+  if (value === null || value === undefined || value === "") return "—";
+  const n = Number(String(value).replace(/[$,]/g, ""));
+  if (!Number.isFinite(n)) return "—";
+  return USD_FORMATTER.format(n);
 }
 
 function isHighAmountReason(reason) {

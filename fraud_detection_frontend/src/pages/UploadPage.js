@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { uploadClaimsCsv } from "../api/client";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Badge from "../components/ui/Badge";
-import { normalizeRisk } from "../utils/format";
+import { formatCurrency, normalizeRisk } from "../utils/format";
+
 
 function summarizeUploadResponse(resp) {
   // Accept flexible backend shapes: { processed, claims, inserted, message, ... }
@@ -32,6 +33,26 @@ export default function UploadPage() {
   const [uploadResult, setUploadResult] = useState(null);
 
   const counts = useMemo(() => countByRisk(uploadResult?.claims || []), [uploadResult]);
+
+  async function loadDemoSeed() {
+    try {
+      setError(null);
+      setUploadResult(null);
+
+      const resp = await fetch("/seed/seedClaimsAllRules.csv", { cache: "no-store" });
+      if (!resp.ok) {
+        throw new Error(`Failed to load seed CSV: HTTP ${resp.status}`);
+      }
+      const text = await resp.text();
+
+      // Build a File so uploadClaimsCsv can continue using FormData/text-csv as-is.
+      const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+      const demoFile = new File([blob], "seedClaimsAllRules.csv", { type: "text/csv" });
+      setFile(demoFile);
+    } catch (e) {
+      setError(e);
+    }
+  }
 
   async function onUpload() {
     if (!file) return;
@@ -88,6 +109,11 @@ export default function UploadPage() {
               <button className="btn btnPrimary" onClick={onUpload} disabled={!file || busy}>
                 {busy ? "Uploading…" : "Upload & Score"}
               </button>
+
+              <button className="btn" onClick={loadDemoSeed} disabled={busy}>
+                Load demo seed CSV
+              </button>
+
               <button
                 className="btn btnDanger"
                 onClick={() => {
@@ -153,16 +179,22 @@ export default function UploadPage() {
                 <tbody>
                   {(uploadResult.claims || []).slice(0, 10).map((c) => {
                     const id = c?.id || c?.claimId || c?.claim_id;
-                    const claimant = c?.claimant || c?.claimantName || c?.name || "—";
-                    const amount = c?.amount || c?.claimAmount || c?.claim_amount || "—";
+                    const claimant =
+                      c?.claimantName ||
+                      c?.claimant ||
+                      c?.name ||
+                      c?.insuredName ||
+                      c?.insured_name ||
+                      "—";
+                    const amountRaw = c?.claimAmount ?? c?.amount ?? c?.claim_amount;
                     return (
                       <tr key={String(id)}>
                         <td>{String(id)}</td>
                         <td>
-                          <Badge risk={c?.riskLevel || c?.risk} />
+                          <Badge risk={c?.riskLevel || c?.risk} score={c?.riskScore ?? c?.score} />
                         </td>
                         <td>{String(claimant)}</td>
-                        <td>{String(amount)}</td>
+                        <td>{formatCurrency(amountRaw)}</td>
                         <td>
                           <Link className="btn" to={`/claims/${encodeURIComponent(id)}`}>
                             View

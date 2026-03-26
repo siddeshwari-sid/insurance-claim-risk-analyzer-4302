@@ -1,0 +1,9 @@
+claim_id,claim_amount,incident_type,incident_date,filed_date,prior_claims_count,description,claimant_name,provider_name,location,policy_number
+CLM-SEED-10001,15500,theft,2026-02-01,2026-03-10,3,"urgent cash needed, no receipt",Alex Rivera,QuickFix Auto,10 Maple St Springfield IL 62701,POL-AX-100
+CLM-SEED-10002,52000,fire,2026-02-05,2026-02-20,1,"lost documents, wire transfer requested",Alex Rivera,QuickFix Auto,10 Maple St Springfield IL 62701,POL-AX-101
+CLM-SEED-10003,9900,water,2026-02-02,2026-02-15,0,"routine repair",Alex Rivera,QuickFix Auto,10 Maple St Springfield IL 62701,POL-AX-102
+CLM-SEED-10004,12000,collision,2026-02-08,2026-03-12,5,"cash only, no receipt",Jordan Lee,QuickFix Auto,10 Maple St Springfield IL 62701,POL-JL-200
+CLM-SEED-10005,18000,theft,2026-02-09,2026-02-18,2,"stolen and urgent",Morgan Patel,QuickFix Auto,10 Maple St Springfield IL 62701,POL-MP-300
+CLM-SEED-10006,2500,collision,2026-02-11,2026-02-14,0,"minor issue",Casey Kim,Northside Claims Partners,99 Elm Ave Springfield IL 62701,POL-CK-400
+CLM-SEED-10007,30500,fire,2026-02-12,2026-03-20,4,"urgent replacement needed",Taylor Smith,Northside Claims Partners,99 Elm Ave Springfield IL 62701,POL-TS-500
+CLM-SEED-10007,30500,fire,2026-02-12,2026-03-20,4,"urgent replacement needed",Taylor Smith,Northside Claims Partners,99 Elm Ave Springfield IL 62701,POL-TS-500

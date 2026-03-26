@@ -4,13 +4,23 @@ import { listClaims } from "../api/client";
 import Badge from "../components/ui/Badge";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Loading from "../components/ui/Loading";
-import { normalizeRisk, sanitizeExplanations } from "../utils/format";
+import { formatCurrency, normalizeRisk, sanitizeExplanations } from "../utils/format";
 
 function extractBasics(claim) {
   const id = claim?.id || claim?.claimId || claim?.claim_id;
   const risk = claim?.riskLevel || claim?.risk || claim?.risk_level;
-  const claimant = claim?.claimant || claim?.claimantName || claim?.name;
-  const amount = claim?.amount || claim?.claimAmount || claim?.claim_amount;
+
+  // Backend canonical field is claimantName.
+  const claimant =
+    claim?.claimantName ||
+    claim?.claimant ||
+    claim?.name ||
+    claim?.insuredName ||
+    claim?.insured_name;
+
+  const amountRaw = claim?.claimAmount ?? claim?.amount ?? claim?.claim_amount;
+  const amount = amountRaw;
+
   const date = claim?.dateOfLoss || claim?.lossDate || claim?.date || claim?.loss_date;
   return { id, risk, claimant, amount, date };
 }
@@ -189,10 +199,10 @@ export default function QueuePage() {
                       <tr key={String(id)}>
                         <td>{String(id)}</td>
                         <td>
-                          <Badge risk={risk} />
+                          <Badge risk={risk} score={c?.riskScore ?? c?.score} />
                         </td>
                         <td>{claimant ? String(claimant) : "—"}</td>
-                        <td>{amount !== undefined && amount !== null ? String(amount) : "—"}</td>
+                        <td>{formatCurrency(amount)}</td>
                         <td>{date ? String(date) : "—"}</td>
                         <td
                           style={{

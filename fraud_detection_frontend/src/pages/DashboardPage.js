@@ -7,7 +7,7 @@ import RiskCountsBar from "../components/charts/RiskCountsBar";
 import Badge from "../components/ui/Badge";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Loading from "../components/ui/Loading";
-import { normalizeRisk, pickFirstExplanation, safeNumber } from "../utils/format";
+import { formatCurrency, normalizeRisk, pickFirstExplanation, safeNumber } from "../utils/format";
 
 function countByRisk(claims) {
   const counts = { High: 0, Medium: 0, Low: 0, Unknown: 0 };
@@ -204,8 +204,19 @@ export default function DashboardPage() {
                   ) : (
                     highRisk.map((c) => {
                       const id = c?.id || c?.claimId || c?.claim_id;
-                      const claimant = c?.claimant || c?.claimantName || c?.name || "—";
-                      const amount = c?.amount || c?.claimAmount || c?.claim_amount || "—";
+
+                      // Backend canonical field is claimantName; keep fallbacks for older/demo shapes.
+                      const claimant =
+                        c?.claimantName ||
+                        c?.claimant ||
+                        c?.name ||
+                        c?.insuredName ||
+                        c?.insured_name ||
+                        "—";
+
+                      const amountRaw = c?.claimAmount ?? c?.amount ?? c?.claim_amount;
+                      const amount = formatCurrency(amountRaw);
+
                       const reasons =
                         c?.explanations || c?.reasonCodes || c?.reasons || c?.explanation;
                       const summary = pickFirstExplanation(reasons, "—");
@@ -214,10 +225,10 @@ export default function DashboardPage() {
                         <tr key={String(id)}>
                           <td>{String(id)}</td>
                           <td>
-                            <Badge risk={c?.riskLevel || c?.risk} />
+                            <Badge risk={c?.riskLevel || c?.risk} score={c?.riskScore ?? c?.score} />
                           </td>
                           <td>{String(claimant)}</td>
-                          <td>{String(amount)}</td>
+                          <td>{amount}</td>
                           <td title={summary}>{String(summary)}</td>
                           <td>
                             <Link className="btn" to={`/claims/${encodeURIComponent(id)}`}>
