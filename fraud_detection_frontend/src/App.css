@@ -1,12 +1,17 @@
-/* Modern dark theme styling for the Fraud Detection UI */
+/* Modern dark theme styling for the Fraud Detection UI (enhanced 3D/glass) */
 :root {
   /* Core theme tokens */
-  --bg: #0b1220; /* deep slate/navy */
-  --surface: rgba(17, 24, 39, 0.85); /* slate-900 w/ translucency */
-  --surface-2: rgba(31, 41, 55, 0.85); /* slate-800 */
+  --bg: #070b16; /* deeper navy */
+  --surface: rgba(17, 24, 39, 0.74); /* glass base */
+  --surface-2: rgba(31, 41, 55, 0.7);
   --text: #e5e7eb; /* slate-200 */
   --muted: rgba(229, 231, 235, 0.72);
-  --border: rgba(148, 163, 184, 0.18); /* subtle slate border */
+
+  /* Borders & highlights */
+  --border: rgba(148, 163, 184, 0.16);
+  --border-strong: rgba(148, 163, 184, 0.26);
+  --hairline: rgba(255, 255, 255, 0.06);
+  --highlight: rgba(255, 255, 255, 0.08);
 
   /* Accents (keep existing brand accents) */
   --primary: #3b82f6; /* blue-500 */
@@ -15,12 +20,13 @@
   --danger: #ef4444; /* red-500 */
   --warning: #f59e0b; /* amber-500 */
 
-  /* Shadows tuned for dark surfaces */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  /* Shadows tuned for dark surfaces (stronger depth) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.62), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-xl: 0 30px 90px rgba(0, 0, 0, 0.72), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
 
-  --radius: 14px;
-  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-sm: 12px;
 
   --font: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
@@ -41,9 +47,16 @@ body,
 body {
   margin: 0;
   font-family: var(--font);
-  background: radial-gradient(1200px 500px at 20% -10%, rgba(59, 130, 246, 0.18), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(6, 182, 212, 0.14), transparent 50%),
+
+  /* Stronger 3D backdrop (multi-layer glow + vignette) */
+  background:
+    radial-gradient(1100px 520px at 18% -10%, rgba(59, 130, 246, 0.24), transparent 55%),
+    radial-gradient(900px 520px at 100% 0%, rgba(6, 182, 212, 0.18), transparent 52%),
+    radial-gradient(700px 520px at 45% 120%, rgba(245, 158, 11, 0.08), transparent 55%),
+    radial-gradient(1200px 900px at 50% 30%, rgba(255, 255, 255, 0.03), transparent 60%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 42%),
     var(--bg);
+
   color: var(--text);
 }
 
@@ -69,8 +82,25 @@ code {
   height: 100vh;
   padding: 18px;
   border-right: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.92), rgba(17, 24, 39, 0.72));
-  backdrop-filter: blur(10px);
+
+  /* glass + depth */
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.92), rgba(17, 24, 39, 0.62)),
+    radial-gradient(700px 360px at 50% 0%, rgba(59, 130, 246, 0.12), transparent 60%);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.55);
+}
+
+.sidebar::before {
+  /* subtle top edge highlight for "sheet of glass" */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), transparent 62%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), transparent 62%);
 }
 
 .brand {
@@ -85,8 +115,15 @@ code {
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(6, 182, 212, 0.95));
-  box-shadow: var(--shadow-sm);
+
+  /* make the mark feel more "3D" */
+  background:
+    radial-gradient(18px 18px at 30% 25%, rgba(255, 255, 255, 0.28), transparent 55%),
+    linear-gradient(135deg, rgba(59, 130, 246, 0.98), rgba(6, 182, 212, 0.92));
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 1px 0 rgba(255, 255, 255, 0.16) inset;
 }
 
 .brandTitle {
@@ -118,20 +155,34 @@ code {
   padding: 10px 12px;
   border-radius: 12px;
   color: var(--muted);
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
   border: 1px solid transparent;
+  transition:
+    transform 0.08s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .navItem:hover {
-  background: rgba(148, 163, 184, 0.12);
+  background:
+    linear-gradient(180deg, rgba(148, 163, 184, 0.16), rgba(148, 163, 184, 0.06));
   color: var(--text);
-  border-color: rgba(148, 163, 184, 0.10);
+  border-color: rgba(148, 163, 184, 0.12);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
 }
 
 .navItemActive {
-  background: rgba(59, 130, 246, 0.14);
+  background:
+    radial-gradient(260px 140px at 30% 25%, rgba(59, 130, 246, 0.22), transparent 60%),
+    linear-gradient(180deg, rgba(59, 130, 246, 0.18), rgba(17, 24, 39, 0.42));
   color: var(--text);
-  border: 1px solid rgba(59, 130, 246, 0.22);
+  border: 1px solid rgba(59, 130, 246, 0.26);
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.48),
+    0 0 0 1px rgba(59, 130, 246, 0.14) inset;
 }
 
 .navIcon {
@@ -144,8 +195,11 @@ code {
   margin-top: 18px;
   padding: 12px;
   border-radius: 12px;
+
   border: 1px solid var(--border);
-  background: rgba(31, 41, 55, 0.55);
+  background:
+    linear-gradient(180deg, rgba(31, 41, 55, 0.64), rgba(17, 24, 39, 0.52));
+  box-shadow: var(--shadow-sm);
   color: var(--muted);
   font-size: 12px;
 }
@@ -179,11 +233,34 @@ code {
   margin: 0 auto;
 }
 
+/* Cards */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  position: relative;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+
+  /* glassy surface with gradient + micro-noise feel (via multiple overlays) */
+  background:
+    radial-gradient(1200px 600px at 20% 0%, rgba(59, 130, 246, 0.10), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    var(--surface);
+
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
+}
+
+.card::before {
+  /* top highlight line to enhance "depth" */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 35%);
+  opacity: 0.9;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), transparent 70%);
 }
 
 .cardPad {
@@ -230,40 +307,81 @@ code {
 
 /* UI: Buttons, Inputs, Badges */
 .btn {
+  position: relative;
   border: 1px solid var(--border);
-  background: rgba(17, 24, 39, 0.65);
   color: var(--text);
   padding: 10px 12px;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.05s ease, border-color 0.15s ease, background-color 0.15s ease;
+
+  /* 3D button surface: gradient + highlight + shadow */
+  background:
+    radial-gradient(240px 120px at 30% 20%, rgba(255, 255, 255, 0.10), transparent 60%),
+    linear-gradient(180deg, rgba(31, 41, 55, 0.72), rgba(17, 24, 39, 0.62));
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.10) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.22) inset;
+
+  transition:
+    transform 0.08s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
 }
 
 .btn:hover {
-  border-color: rgba(59, 130, 246, 0.40);
-  background: rgba(17, 24, 39, 0.78);
+  border-color: rgba(59, 130, 246, 0.42);
+  filter: brightness(1.05);
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(59, 130, 246, 0.12) inset,
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+  transform: translateY(-1px);
 }
 
 .btn:active {
   transform: translateY(1px);
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
 }
 
 .btnPrimary {
-  border-color: rgba(37, 99, 235, 0.50);
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.98), rgba(37, 99, 235, 0.98));
+  border-color: rgba(37, 99, 235, 0.52);
   color: white;
+  background:
+    radial-gradient(280px 150px at 30% 20%, rgba(255, 255, 255, 0.22), transparent 55%),
+    linear-gradient(180deg, rgba(59, 130, 246, 0.98), rgba(37, 99, 235, 0.92));
+  box-shadow:
+    0 18px 40px rgba(37, 99, 235, 0.22),
+    0 14px 28px rgba(0, 0, 0, 0.48),
+    0 1px 0 rgba(255, 255, 255, 0.18) inset;
 }
 
 .btnPrimary:hover {
-  border-color: rgba(37, 99, 235, 0.78);
+  border-color: rgba(37, 99, 235, 0.80);
+  box-shadow:
+    0 22px 52px rgba(37, 99, 235, 0.28),
+    0 18px 38px rgba(0, 0, 0, 0.54),
+    0 0 0 1px rgba(255, 255, 255, 0.10) inset;
 }
 
 .btnDanger {
-  border-color: rgba(239, 68, 68, 0.45);
-  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.48);
+  background:
+    radial-gradient(260px 130px at 30% 20%, rgba(255, 255, 255, 0.10), transparent 58%),
+    linear-gradient(180deg, rgba(239, 68, 68, 0.18), rgba(17, 24, 39, 0.62));
   color: var(--text);
 }
 
@@ -278,18 +396,27 @@ code {
 .select {
   width: 100%;
   border: 1px solid var(--border);
-  background: rgba(17, 24, 39, 0.55);
   color: var(--text);
   border-radius: 12px;
   padding: 10px 12px;
   font-size: 13px;
   outline: none;
-  box-shadow: var(--shadow-sm);
+
+  background:
+    radial-gradient(360px 140px at 25% 10%, rgba(255, 255, 255, 0.08), transparent 60%),
+    linear-gradient(180deg, rgba(17, 24, 39, 0.68), rgba(17, 24, 39, 0.42));
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.42),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
 }
 
 .input:focus,
 .select:focus {
-  border-color: rgba(59, 130, 246, 0.55);
+  border-color: rgba(59, 130, 246, 0.62);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 3px rgba(59, 130, 246, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
 }
 
 .smallHelp {
@@ -301,27 +428,37 @@ code {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  font-weight: 700;
+  border: 1px solid var(--border-strong);
+  font-weight: 800;
   font-size: 12px;
-  background: rgba(31, 41, 55, 0.55);
+
+  background:
+    radial-gradient(160px 70px at 30% 20%, rgba(255, 255, 255, 0.14), transparent 60%),
+    linear-gradient(180deg, rgba(31, 41, 55, 0.66), rgba(17, 24, 39, 0.54));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.42), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
 }
 
 .badgeHigh {
   border-color: rgba(239, 68, 68, 0.55);
-  background: rgba(239, 68, 68, 0.16);
+  background:
+    radial-gradient(180px 80px at 30% 20%, rgba(255, 255, 255, 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(239, 68, 68, 0.22), rgba(17, 24, 39, 0.55));
 }
 
 .badgeMedium {
-  border-color: rgba(245, 158, 11, 0.55);
-  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.62);
+  background:
+    radial-gradient(180px 80px at 30% 20%, rgba(255, 255, 255, 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(245, 158, 11, 0.20), rgba(17, 24, 39, 0.55));
 }
 
 .badgeLow {
-  border-color: rgba(6, 182, 212, 0.55);
-  background: rgba(6, 182, 212, 0.16);
+  border-color: rgba(6, 182, 212, 0.60);
+  background:
+    radial-gradient(180px 80px at 30% 20%, rgba(255, 255, 255, 0.16), transparent 62%),
+    linear-gradient(180deg, rgba(6, 182, 212, 0.18), rgba(17, 24, 39, 0.55));
 }
 
 /* Table */
@@ -329,7 +466,15 @@ code {
   overflow: auto;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: rgba(17, 24, 39, 0.55);
+
+  background:
+    radial-gradient(900px 420px at 20% 0%, rgba(59, 130, 246, 0.08), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(17, 24, 39, 0.48);
+
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
 }
 
 .table {
@@ -342,35 +487,49 @@ code {
 .table th,
 .table td {
   padding: 12px 12px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
   text-align: left;
   white-space: nowrap;
 }
 
 .table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   font-size: 12px;
   letter-spacing: 0.02em;
   color: var(--muted);
-  background: rgba(31, 41, 55, 0.55);
+
+  background:
+    linear-gradient(180deg, rgba(31, 41, 55, 0.72), rgba(17, 24, 39, 0.62));
+  border-bottom: 1px solid rgba(148, 163, 184, 0.20);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
 }
 
 .table tr:hover td {
-  background: rgba(59, 130, 246, 0.10);
+  background:
+    radial-gradient(520px 220px at 20% 30%, rgba(59, 130, 246, 0.16), transparent 65%),
+    rgba(59, 130, 246, 0.08);
 }
 
 /* Alerts */
 .alert {
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: rgba(31, 41, 55, 0.55);
+  background:
+    radial-gradient(520px 220px at 20% 10%, rgba(255, 255, 255, 0.08), transparent 62%),
+    linear-gradient(180deg, rgba(31, 41, 55, 0.62), rgba(17, 24, 39, 0.54));
   padding: 12px;
   color: var(--muted);
   font-size: 13px;
+  box-shadow: var(--shadow-sm);
 }
 
 .alertError {
   border-color: rgba(239, 68, 68, 0.55);
-  background: rgba(239, 68, 68, 0.12);
+  background:
+    radial-gradient(520px 220px at 20% 10%, rgba(255, 255, 255, 0.08), transparent 62%),
+    linear-gradient(180deg, rgba(239, 68, 68, 0.16), rgba(17, 24, 39, 0.58));
   color: rgba(254, 202, 202, 0.95);
 }
 
@@ -382,9 +541,10 @@ code {
 
 .kpiValue {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 900;
   margin: 0;
   letter-spacing: -0.02em;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
 }
 
 .kpiSub {
