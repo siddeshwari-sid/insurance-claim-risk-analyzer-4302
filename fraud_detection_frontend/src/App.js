@@ -6,24 +6,38 @@ import DashboardPage from "./pages/DashboardPage";
 import UploadPage from "./pages/UploadPage";
 import QueuePage from "./pages/QueuePage";
 import ClaimDetailPage from "./pages/ClaimDetailPage";
+import LoginPage from "./pages/LoginPage";
+import RequireAuth from "./auth/RequireAuth";
 
 // PUBLIC_INTERFACE
 function App() {
   /**
    * Main React application entry.
-   * Provides sidebar layout and routes for Dashboard, Upload, Queue, and Claim Detail.
+   * Provides login route and protects app routes (dashboard/upload/queue/detail) behind auth.
    */
   return (
-    <AppLayout>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/upload" element={<UploadPage />} />
-        <Route path="/queue" element={<QueuePage />} />
-        <Route path="/claims/:id" element={<ClaimDetailPage />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </AppLayout>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Protected application routes */}
+      <Route
+        path="/*"
+        element={
+          <RequireAuth>
+            <AppLayout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/upload" element={<UploadPage />} />
+                <Route path="/queue" element={<QueuePage />} />
+                <Route path="/claims/:id" element={<ClaimDetailPage />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </AppLayout>
+          </RequireAuth>
+        }
+      />
+    </Routes>
   );
 }
 

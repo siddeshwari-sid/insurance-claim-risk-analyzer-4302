@@ -1,13 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { AuthProvider } from "./auth/AuthContext";
 
-test("renders dashboard heading", () => {
+test("renders login heading when unauthenticated", () => {
   render(
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AuthProvider>
   );
-  const heading = screen.getByText(/dashboard/i);
+
+  const heading = screen.getByText(/sign in/i);
   expect(heading).toBeInTheDocument();
 });
