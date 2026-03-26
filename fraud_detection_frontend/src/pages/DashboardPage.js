@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { listClaims } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import RiskDistributionPie from "../components/charts/RiskDistributionPie";
+import RiskCountsBar from "../components/charts/RiskCountsBar";
 import Badge from "../components/ui/Badge";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import Loading from "../components/ui/Loading";
@@ -156,22 +157,16 @@ export default function DashboardPage() {
 
             <div className="card">
               <div className="cardPad">
-                <strong>Notes</strong>
+                <strong>Risk counts per upload</strong>
                 <div className="smallHelp">
-                  This dashboard reflects the backend’s in-memory store for the current
-                  session. Upload a CSV to refresh the distribution.
+                  Risk counts grouped by inferred upload batches over time, based on claim
+                  timestamps (<code>createdAt</code>). If timestamps are missing, this chart
+                  will remain empty.
                 </div>
+              </div>
 
-                <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                  <div className="alert">
-                    <strong>Tip:</strong> click <em>Open queue</em> to filter and search
-                    across all claims.
-                  </div>
-                  <div className="alert">
-                    <strong>Why a pie chart?</strong> quick scan for risk skew and
-                    operational load (review capacity).
-                  </div>
-                </div>
+              <div className="cardPad" style={{ paddingTop: 0 }}>
+                <RiskCountsBar claims={claims || []} height={300} maxBuckets={8} gapMinutes={10} />
               </div>
             </div>
           </div>
