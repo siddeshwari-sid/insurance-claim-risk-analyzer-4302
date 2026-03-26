@@ -110,12 +110,58 @@ export default function ClaimDetailPage() {
                   <div style={{ fontWeight: 700 }}>{basic.policy ? String(basic.policy) : "—"}</div>
                 </div>
               </div>
+
+              <div style={{ marginTop: 12 }}>
+                <strong>Cross-claim signals</strong>
+                <div className="smallHelp">
+                  Detected by comparing this claim against previously uploaded claims in the in-memory store.
+                </div>
+
+                {claim?.fraudSignals ? (
+                  <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+                    <div className="card cardPad" style={{ background: "rgba(241,245,249,0.65)" }}>
+                      <div className="kpiTitle">Duplicate claim_id count</div>
+                      <div style={{ fontWeight: 800 }}>
+                        {String(claim.fraudSignals.duplicateClaimIdCount ?? 0)}
+                      </div>
+                      <div className="smallHelp">
+                        Number of previously stored claims with the same claim_id.
+                      </div>
+                    </div>
+
+                    <div className="grid gridCols3" style={{ gap: 10 }}>
+                      <div className="card cardPad" style={{ background: "rgba(241,245,249,0.65)" }}>
+                        <div className="kpiTitle">Prior claimant count</div>
+                        <div style={{ fontWeight: 800 }}>
+                          {String(claim.fraudSignals.priorClaimantCount ?? 0)}
+                        </div>
+                      </div>
+                      <div className="card cardPad" style={{ background: "rgba(241,245,249,0.65)" }}>
+                        <div className="kpiTitle">Prior provider count</div>
+                        <div style={{ fontWeight: 800 }}>
+                          {String(claim.fraudSignals.priorProviderCount ?? 0)}
+                        </div>
+                      </div>
+                      <div className="card cardPad" style={{ background: "rgba(241,245,249,0.65)" }}>
+                        <div className="kpiTitle">Prior location count</div>
+                        <div style={{ fontWeight: 800 }}>
+                          {String(claim.fraudSignals.priorLocationCount ?? 0)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="alert" style={{ marginTop: 10 }}>
+                    No cross-claim signals available for this claim (older uploads may not include them).
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="card cardPad">
               <strong>Explanations</strong>
               <div className="smallHelp">
-                These strings explain why the claim was scored at the given risk level.
+                These strings explain why the claim was scored at the given risk level (including any cross-claim signals).
               </div>
 
               <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
