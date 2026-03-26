@@ -1,1 +1,3 @@
-# insurance-claim-risk-analyzer-4302
+# Project Repository
+
+This is the initial README file for the project.
