@@ -10,8 +10,8 @@ export function AuthProvider({ children }) {
    */
   const [session, setSession] = useState(() => getStoredAuth());
 
-  const login = useCallback((username, password) => {
-    const s = loginWithCredentials(username, password);
+  const login = useCallback((email, password) => {
+    const s = loginWithCredentials(email, password);
     setSession(s);
     return s;
   }, []);

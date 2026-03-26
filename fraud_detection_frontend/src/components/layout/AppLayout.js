@@ -161,7 +161,12 @@ export default function AppLayout({ children }) {
 
         <div className="sidebarFooter">
           <div>
-            <strong>Signed in:</strong> {session?.username ? String(session.username) : "—"}
+            <strong>Signed in:</strong>{" "}
+            {session?.email
+              ? String(session.email)
+              : session?.username
+                ? String(session.username)
+                : "—"}
           </div>
 
           <div style={{ marginTop: 8 }}>

@@ -9,14 +9,20 @@ const AUTH_STORAGE_KEY = "fraud_detection_auth_v1";
 export function getStoredAuth() {
   /**
    * Read the current auth session from localStorage.
-   * @returns {{ username: string, loginAt: string } | null}
+   * @returns {{ email: string, loginAt: string } | null}
    */
   try {
     const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
     if (!raw) return null;
+
     const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed.username !== "string") return null;
-    return parsed;
+
+    // Backward compatibility: previously stored sessions used { username }.
+    const email = parsed?.email ?? parsed?.username;
+
+    if (!email || typeof email !== "string") return null;
+
+    return { ...parsed, email: String(email) };
   } catch {
     return null;
   }
@@ -30,28 +36,31 @@ export function isAuthenticated() {
   return Boolean(getStoredAuth());
 }
 
-const DEFAULT_USERNAME = "admin";
+const DEFAULT_EMAIL = "admin";
 const DEFAULT_PASSWORD = "admin";
 
 // PUBLIC_INTERFACE
-export function loginWithCredentials(username, password) {
+export function loginWithCredentials(email, password) {
   /**
    * "Authenticates" the user client-side.
    * In a real app this would call a backend auth endpoint.
    *
    * This demo app requires default credentials:
-   *   username: admin
+   *   email: admin
    *   password: admin
    *
-   * @param {string} username
+   * Note: despite the UI calling this an "email", we keep the demo credential
+   * as "admin" to preserve the existing default behavior.
+   *
+   * @param {string} email
    * @param {string} password
-   * @returns {{ username: string, loginAt: string }}
+   * @returns {{ email: string, loginAt: string }}
    */
-  const u = String(username || "").trim();
+  const e = String(email || "").trim();
   const p = String(password || "");
 
-  if (!u) {
-    throw new Error("Username is required.");
+  if (!e) {
+    throw new Error("Email is required.");
   }
   if (!p) {
     throw new Error("Password is required.");
@@ -59,11 +68,11 @@ export function loginWithCredentials(username, password) {
 
   // Enforce default credentials for this demo.
   // Keep the error explicit and user-friendly.
-  if (u !== DEFAULT_USERNAME || p !== DEFAULT_PASSWORD) {
-    throw new Error("Incorrect username or password. Try admin / admin.");
+  if (e !== DEFAULT_EMAIL || p !== DEFAULT_PASSWORD) {
+    throw new Error("Incorrect email or password. Try admin / admin.");
   }
 
-  const session = { username: u, loginAt: new Date().toISOString() };
+  const session = { email: e, loginAt: new Date().toISOString() };
   window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
   return session;
 }

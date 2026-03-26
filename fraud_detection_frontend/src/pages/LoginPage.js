@@ -26,13 +26,13 @@ export default function LoginPage() {
     return safePathname(from) || "/dashboard";
   }, [location.state]);
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
-  function onChangeUsername(next) {
-    setUsername(next);
+  function onChangeEmail(next) {
+    setEmail(next);
     // Clear stale error as user edits
     if (error) setError(null);
   }
@@ -52,7 +52,7 @@ export default function LoginPage() {
     try {
       setBusy(true);
       setError(null);
-      login(username, password);
+      login(email, password);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err);
@@ -68,7 +68,7 @@ export default function LoginPage() {
           <div style={{ marginBottom: 10 }}>
             <h1 style={{ margin: 0, fontSize: 20, letterSpacing: "-0.02em" }}>Sign in</h1>
             <p style={{ margin: "6px 0 0 0", color: "var(--muted)", fontSize: 13 }}>
-              Enter your username and password to access the dashboard.
+              Enter your email and password to access the dashboard.
             </p>
           </div>
 
@@ -76,15 +76,16 @@ export default function LoginPage() {
 
           <form onSubmit={onSubmit} style={{ marginTop: 12, display: "grid", gap: 10 }}>
             <div>
-              <label htmlFor="username" style={{ display: "block", fontWeight: 800, marginBottom: 8 }}>
-                Username
+              <label htmlFor="email" style={{ display: "block", fontWeight: 800, marginBottom: 8 }}>
+                Email
               </label>
               <input
-                id="username"
+                id="email"
                 className="input"
-                autoComplete="username"
-                value={username}
-                onChange={(e) => onChangeUsername(e.target.value)}
+                autoComplete="email"
+                inputMode="email"
+                value={email}
+                onChange={(e) => onChangeEmail(e.target.value)}
                 placeholder="admin"
                 disabled={busy}
               />
