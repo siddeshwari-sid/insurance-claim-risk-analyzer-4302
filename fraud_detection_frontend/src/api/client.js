@@ -21,19 +21,17 @@ export function getApiBaseUrl() {
   /**
    * Returns the backend base URL (no trailing slash).
    *
-   * Configure one of:
-   * - REACT_APP_API_BASE (preferred)
+   * Configure one of (preferred):
+   * - REACT_APP_API_BASE
    * - REACT_APP_BACKEND_URL
    *
-   * Example:
-   *   REACT_APP_BACKEND_URL=https://your-backend.example.com
+   * Robust fallback (runtime, when env vars are not injected in preview):
+   * - If running in browser, derive backend URL from window.location by switching
+   *   to port 3001 on the same hostname.
    *
-   * IMPORTANT:
-   * We intentionally do NOT default to same-origin ("") because in most modern
-   * deployments the frontend and backend are on different hosts/ports. Falling
-   * back to same-origin causes confusing errors like:
+   * This prevents confusing same-origin errors like:
    *   "Cannot POST /api/claims/upload"
-   * (the request hits the frontend dev server instead of the backend).
+   * where the request accidentally hits the React dev server (port 3000).
    */
   const raw =
     process.env.REACT_APP_API_BASE ||
@@ -43,16 +41,32 @@ export function getApiBaseUrl() {
 
   const trimmed = String(raw).trim();
 
-  if (!trimmed) {
-    throw new Error(
-      "Backend API base URL is not configured. Set REACT_APP_BACKEND_URL or REACT_APP_API_BASE (e.g. https://<backend-host>:3001)."
-    );
+  // 1) Env-configured base URL (preferred).
+  if (trimmed) {
+    // Common copy/paste mistake: pointing at Swagger docs URL.
+    const withoutDocs = trimmed.replace(/\/docs\/?$/i, "");
+    return withoutDocs.replace(/\/$/, "");
   }
 
-  // Common copy/paste mistake: pointing at Swagger docs URL.
-  const withoutDocs = trimmed.replace(/\/docs\/?$/i, "");
+  // 2) Runtime fallback: same hostname, backend port 3001.
+  // CRA defines window only in browser; tests/SSR will skip this path.
+  if (typeof window !== "undefined" && window?.location?.origin) {
+    try {
+      const u = new URL(window.location.origin);
 
-  return withoutDocs.replace(/\/$/, "");
+      // If we're on the frontend dev server port, assume backend is 3001.
+      // Also handle case where port is missing (default 80/443): still force 3001.
+      u.port = "3001";
+
+      return u.toString().replace(/\/$/, "");
+    } catch {
+      // Ignore and fall through.
+    }
+  }
+
+  // 3) Last resort: same-origin. This can work for single-origin deployments
+  // where a reverse proxy serves both UI and API.
+  return "";
 }
 
 function looksLikeHtml(text) {
