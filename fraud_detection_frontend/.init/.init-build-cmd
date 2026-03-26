@@ -1,0 +1,4 @@
+{
+  "working_directory": "/home/kavia/workspace/code-generation/insurance-claim-risk-analyzer/fraud_detection_frontend",
+  "command": "npm install && npm start"
+}
