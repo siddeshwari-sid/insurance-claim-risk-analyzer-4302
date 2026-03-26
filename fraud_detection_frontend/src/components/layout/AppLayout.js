@@ -30,6 +30,79 @@ function Icon({ type }) {
   return null;
 }
 
+function BrandLogoMark() {
+  return (
+    <span className="brandMark" aria-hidden="true">
+      <svg
+        width="38"
+        height="38"
+        viewBox="0 0 48 48"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ display: "block" }}
+      >
+        <defs>
+          <linearGradient
+            id="kaviaMarkGradient"
+            x1="10"
+            y1="10"
+            x2="40"
+            y2="40"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#3b82f6" />
+            <stop offset="1" stopColor="#06b6d4" />
+          </linearGradient>
+          <radialGradient
+            id="kaviaMarkGlow"
+            cx="0"
+            cy="0"
+            r="1"
+            gradientUnits="userSpaceOnUse"
+            gradientTransform="translate(16 14) rotate(45) scale(26 26)"
+          >
+            <stop stopColor="white" stopOpacity="0.35" />
+            <stop offset="1" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Rounded square base */}
+        <rect
+          x="6"
+          y="6"
+          width="36"
+          height="36"
+          rx="12"
+          fill="url(#kaviaMarkGradient)"
+        />
+        <rect
+          x="6"
+          y="6"
+          width="36"
+          height="36"
+          rx="12"
+          fill="url(#kaviaMarkGlow)"
+        />
+
+        {/* Abstract "shield + check" motif for fraud/risk */}
+        <path
+          d="M24 14c5.6 0 10 2.1 10 2.1v8.7c0 8.1-5.5 13.2-10 15.1-4.5-1.9-10-7-10-15.1v-8.7S18.4 14 24 14Z"
+          fill="rgba(7,11,22,0.22)"
+          stroke="rgba(255,255,255,0.38)"
+          strokeWidth="1.2"
+        />
+        <path
+          d="M19.5 25.2l3 3.2 6-6.4"
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
 // PUBLIC_INTERFACE
 export default function AppLayout({ children }) {
   /**
@@ -43,7 +116,7 @@ export default function AppLayout({ children }) {
     <div className="appShell">
       <aside className="sidebar" aria-label="Primary">
         <div className="brand">
-          <div className="brandMark" aria-hidden="true" />
+          <BrandLogoMark />
           <div className="brandTitle">
             <strong>Claim Risk Analyzer</strong>
             <span>Fraud Detection</span>
