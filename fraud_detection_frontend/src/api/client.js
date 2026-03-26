@@ -21,15 +21,19 @@ export function getApiBaseUrl() {
   /**
    * Returns the backend base URL (no trailing slash).
    *
-   * This app intentionally avoids same-origin/proxy reliance. Configure one of:
+   * Configure one of:
    * - REACT_APP_API_BASE (preferred)
-   * - REACT_APP_BACKEND_URL (supported by this project's env list)
+   * - REACT_APP_BACKEND_URL
    *
    * Example:
    *   REACT_APP_BACKEND_URL=https://your-backend.example.com
    *
-   * Note: We keep a final fallback to same-origin ("") for maximum compatibility,
-   * but production deployments should set one of the env vars above.
+   * IMPORTANT:
+   * We intentionally do NOT default to same-origin ("") because in most modern
+   * deployments the frontend and backend are on different hosts/ports. Falling
+   * back to same-origin causes confusing errors like:
+   *   "Cannot POST /api/claims/upload"
+   * (the request hits the frontend dev server instead of the backend).
    */
   const raw =
     process.env.REACT_APP_API_BASE ||
@@ -37,7 +41,18 @@ export function getApiBaseUrl() {
     process.env.REACT_APP_API_BASE_URL ||
     "";
 
-  return String(raw).trim().replace(/\/$/, "");
+  const trimmed = String(raw).trim();
+
+  if (!trimmed) {
+    throw new Error(
+      "Backend API base URL is not configured. Set REACT_APP_BACKEND_URL or REACT_APP_API_BASE (e.g. https://<backend-host>:3001)."
+    );
+  }
+
+  // Common copy/paste mistake: pointing at Swagger docs URL.
+  const withoutDocs = trimmed.replace(/\/docs\/?$/i, "");
+
+  return withoutDocs.replace(/\/$/, "");
 }
 
 function looksLikeHtml(text) {
