@@ -56,8 +56,11 @@ export function loginWithCredentials(email, password) {
    * @param {string} password
    * @returns {{ email: string, loginAt: string }}
    */
-  const e = String(email || "").trim();
-  const p = String(password || "");
+  // Normalize user inputs to avoid false negatives due to whitespace
+  // (e.g., copy/paste, password manager inserts trailing newline).
+  // We also treat the demo "email" as a case-insensitive identifier.
+  const e = String(email || "").trim().toLowerCase();
+  const p = String(password || "").trim();
 
   if (!e) {
     throw new Error("Email is required.");
